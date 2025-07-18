@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SOAR Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Dashboard</h2>
+    <p id="user-info">Loading...</p>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Not logged in');
+      window.location.href = '/';
+    } else {
+      fetch('/api/users/me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('user-info').textContent = `Logged in as: ${data.logged_in_as}`;
+      })
+      .catch(() => {
+        alert('Token expired or invalid. Please login again.');
+        localStorage.removeItem('token');
+        window.location.href = '/';
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+Flask
+Flask-RESTful
+Flask-JWT-Extended
+Flask-Migrate
+SQLAlchemy
+Werkzeug
+passlib
+python-dotenv
+Flask
+Flask-RESTful
+Flask-JWT-Extended
+Flask-Migrate
+SQLAlchemy
+Werkzeug
+passlib
+python-dotenv
