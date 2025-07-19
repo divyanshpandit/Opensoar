@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Update Profile</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="form-box">
+    <h2>Update Profile</h2>
+    <form id="profile-form">
+      <input type="text" id="name" placeholder="Name"><br>
+      <input type="email" id="email" placeholder="Email"><br>
+      <input type="password" id="password" placeholder="New Password"><br>
+      <button type="submit">Update</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('profile-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const token = localStorage.getItem('token');
+      fetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: document.getElementById('name').value,
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value
+        })
+      })
+      .then(res => res.json())
+      .then(data => alert(data.msg));
+    });
+  </script>
+</body>
+</html>

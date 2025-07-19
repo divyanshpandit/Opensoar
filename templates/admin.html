@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Incident Admin Panel</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Incident Admin Panel</h2>
+
+    <div class="form-box">
+      <label for="filter">Filter by Severity:</label>
+      <select id="filter">
+        <option value="">All</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+    </div>
+
+    <div class="form-box">
+      <form id="incident-form">
+        <input type="text" id="title" placeholder="Incident Title" required>
+        <select id="severity">
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+        <button type="submit">Create Incident</button>
+      </form>
+    </div>
+
+    <table id="incident-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Severity</th>
+          <th>Status</th>
+          <th>Created At</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h3>Severity Overview</h3>
+    <canvas id="severityChart" width="400" height="200"></canvas>
+
+    <h3>Incidents Over Time</h3>
+    <canvas id="trendChart" width="400" height="200"></canvas>
+
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("You're not logged in.");
+      window.location.href = "/";
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/';
+    }
+
+    function renderCharts(data) {
+      const severityCounts = { Low: 0, Medium: 0, High: 0 };
+      const dateCounts = {};
+
+      data.forEach(incident => {
+        severityCounts[incident.severity]++;
+        const date = new Date(incident.created_at).toISOString().split('T')[0];
+        dateCounts[date] = (dateCounts[date] || 0) + 1;
+      });
+
+      // Destroy previous charts if already initialized
+      if (window.severityChartInstance) window.severityChartInstance.destroy();
+      if (window.trendChartInstance) window.trendChartInstance.destroy();
+
+      const sctx = document.getElementById('severityChart').getContext('2d');
+      window.severityChartInstance = new Chart(sctx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(severityCounts),
+          datasets: [{
+            label: 'Severity Count',
+            data: Object.values(severityCounts),
+            backgroundColor: ['green', 'orange', 'red']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: { display: true, text: 'Incident Severity Overview' }
+          }
+        }
+      });
+
+      const trendDates = Object.keys(dateCounts).sort();
+      const trendCounts = trendDates.map(date => dateCounts[date]);
+      const tctx = document.getElementById('trendChart').getContext('2d');
+      window.trendChartInstance = new Chart(tctx, {
+        type: 'line',
+        data: {
+          labels: trendDates,
+          datasets: [{
+            label: 'Incidents per Day',
+            data: trendCounts,
+            borderColor: 'blue',
+            fill: false,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: { display: true, text: 'Incident Trend Over Time' }
+          }
+        }
+      });
+    }
+
+    function loadIncidents() {
+      const filter = document.getElementById('filter').value;
+      fetch('/api/incidents/', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const tbody = document.getElementById('incident-table').querySelector('tbody');
+        tbody.innerHTML = '';
+        const filtered = data.filter(i => !filter || i.severity === filter);
+        filtered.forEach(incident => {
+          const row = tbody.insertRow();
+          row.innerHTML = `
+            <td>${incident.id}</td>
+            <td>${incident.title}</td>
+            <td>${incident.severity}</td>
+            <td>${incident.status}</td>
+            <td>${new Date(incident.created_at).toLocaleString()}</td>
+          `;
+        });
+        renderCharts(filtered);
+      })
+      .catch(err => console.error('Error loading incidents:', err));
+    }
+
+    document.getElementById('filter').addEventListener('change', loadIncidents);
+
+    document.getElementById('incident-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const title = document.getElementById('title').value;
+      const severity = document.getElementById('severity').value;
+
+      fetch('/api/incidents/', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, severity })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to create incident");
+        document.getElementById('title').value = '';
+        loadIncidents();
+      })
+      .catch(err => alert("Error: " + err.message));
+    });
+
+    loadIncidents();
+  </script>
+</body>
+</html>

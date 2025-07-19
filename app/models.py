@@ -13,3 +13,12 @@ class User(db.Model):
     @staticmethod
     def verify_hash(password, hash_):
         return sha256.verify(password, hash_)
+from datetime import datetime
+from app import db
+
+class Incident(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), nullable=False)
+    severity = db.Column(db.String(20), nullable=False)  # e.g., Low, Medium, High
+    status = db.Column(db.String(20), default='Open')    # Open, In Progress, Closed
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

@@ -1,10 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>SOAR Login/Register</title>
   <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .container {
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    .container h2 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .container input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .container button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .container button:hover {
+      background-color: #0056b3;
+    }
+
+    .admin-box {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .admin-box button {
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .admin-box button:hover {
+      background-color: #1e7e34;
+    }
+  </style>
 </head>
 <body>
+
   <div class="container">
     <h2>SOAR - Login</h2>
     <input type="text" id="login-username" placeholder="Username">
@@ -15,8 +73,23 @@
     <input type="text" id="reg-username" placeholder="Username">
     <input type="password" id="reg-password" placeholder="Password">
     <button onclick="register()">Register</button>
+
+    <div class="admin-box">
+      <h3>Admin Access</h3>
+      <button onclick="goToAdmin()">Go to Admin Panel</button>
+    </div>
   </div>
 
+  <script>
+    function goToAdmin() {
+      const token = localStorage.getItem('token');
+      if (token) {
+        window.location.href = '/admin';
+      } else {
+        alert('Please login first.');
+      }
+    }
+  </script>
   <script src="/static/script.js"></script>
 </body>
 </html>

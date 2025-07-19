@@ -1,4 +1,5 @@
 Flask
+Flask-Cors
 Flask-RESTful
 Flask-JWT-Extended
 Flask-Migrate
