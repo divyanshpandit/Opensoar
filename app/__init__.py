@@ -6,7 +6,6 @@ from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 import os
 
-
 # Load environment variables
 load_dotenv()
 
@@ -16,14 +15,15 @@ migrate = Migrate()
 jwt = JWTManager()
 
 def create_app():
-
     app = Flask(__name__, template_folder='../templates', static_folder='../static')
+
     # Enable CORS for the app
     CORS(app)
+
     # Load config
     app.config.from_object('config.Config')
 
-    # Initialize extensions with app
+    # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
@@ -32,8 +32,9 @@ def create_app():
     from app.routes.auth import auth_bp
     from app.routes.user import user_bp
     from app.routes.incidents import incident_bp
-    
-    app.register_blueprint(auth_bp, url_prefix='/api/auth')
-    app.register_blueprint(user_bp, url_prefix='/api/users')
+
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(user_bp, url_prefix='/api/users')  # ✅ register only once
     app.register_blueprint(incident_bp, url_prefix='/api/incidents')
+
     return app

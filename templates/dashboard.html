@@ -1,66 +1,74 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>SOAR Dashboard</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-  <div class="container">
-    <h2>Dashboard</h2>
-    <p id="user-info">Loading...</p>
-    <button onclick="logout()">Logout</button>
-  </div>
+{% extends 'base.html' %}
+{% block title %}SOAR Dashboard{% endblock %}
+{% block body_class %}dashboard-body{% endblock %}
 
-  <div style="width: 80%; margin: 40px auto;">
-    <h2>Incident Severity Overview</h2>
-    <canvas id="severityChart"></canvas>
-  </div>
+{% block content %}
+<div class="container">
+  <h2>Dashboard</h2>
+  <p id="user-info">Loading...</p>
+  <button onclick="logout()">Logout</button>
+</div>
 
-  <div style="width: 80%; margin: 40px auto;">
-    <h2>Incidents Over Time</h2>
-    <canvas id="trendChart"></canvas>
-  </div>
+<div class="glass-box">
+  <h3>Incident Severity Overview</h3>
+  <canvas id="severityChart"></canvas>
+</div>
 
-  <script>
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Not logged in');
-      window.location.href = '/';
-    }
+<div class="glass-box">
+  <h3>Incidents Over Time</h3>
+  <canvas id="trendChart"></canvas>
+</div>
+{% endblock %}
 
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-    }
+{% block extra_scripts %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    // Show user info
-    fetch('/api/users/me', {
+<script>
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Not logged in');
+    window.location.href = '/';
+  }
+
+  function logout() {
+    localStorage.removeItem('token');
+    window.location.href = '/';
+  }
+
+  // Show user info
+  fetch('/api/users/me', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById('user-info').textContent = `Logged in as: ${data.logged_in_as}`;
+  })
+  .catch(() => {
+    alert('Session expired. Please login again.');
+    logout();
+  });
+
+  // Load charts after DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    fetch('/api/incidents/', {
       headers: { 'Authorization': 'Bearer ' + token }
     })
     .then(res => res.json())
     .then(data => {
-      document.getElementById('user-info').textContent = `Logged in as: ${data.logged_in_as}`;
-    })
-    .catch(() => {
-      alert('Session expired. Please login again.');
-      logout();
-    });
+      const severityCounts = { High: 0, Medium: 0, Low: 0 };
+      const dateCounts = {};
 
-    // Chart rendering after DOM is loaded
-    document.addEventListener('DOMContentLoaded', () => {
-      fetch('/api/incidents/', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      })
-      .then(res => res.json())
-      .then(data => {
-        // Bar Chart: Severity Overview
-        const severityCounts = { High: 0, Medium: 0, Low: 0 };
-        data.forEach(i => severityCounts[i.severity] = (severityCounts[i.severity] || 0) + 1);
+      data.forEach(i => {
+        severityCounts[i.severity] = (severityCounts[i.severity] || 0) + 1;
+        const date = new Date(i.created_at).toISOString().split('T')[0];
+        dateCounts[date] = (dateCounts[date] || 0) + 1;
+      });
 
-        const sctx = document.getElementById('severityChart').getContext('2d');
-        new Chart(sctx, {
+      // Render Severity Chart
+      const severityCtx = document.getElementById('severityChart')?.getContext('2d');
+      if (severityCtx) {
+        new Chart(severityCtx, {
           type: 'bar',
           data: {
             labels: ['High', 'Medium', 'Low'],
@@ -77,32 +85,31 @@
           options: {
             responsive: true,
             plugins: {
-              legend: { display: false },
-              title: { display: true, text: 'Incidents by Severity' }
+              title: {
+                display: true,
+                text: 'Incidents by Severity'
+              },
+              legend: { display: false }
             }
           }
         });
+      }
 
-        // Line Chart: Incidents Over Time
-        const dateCounts = {};
-        data.forEach(i => {
-          const date = new Date(i.created_at).toISOString().split('T')[0];
-          dateCounts[date] = (dateCounts[date] || 0) + 1;
-        });
-
+      // Render Trend Chart
+      const trendCtx = document.getElementById('trendChart')?.getContext('2d');
+      if (trendCtx) {
         const trendDates = Object.keys(dateCounts).sort();
         const trendCounts = trendDates.map(date => dateCounts[date]);
 
-        const tctx = document.getElementById('trendChart').getContext('2d');
-        new Chart(tctx, {
+        new Chart(trendCtx, {
           type: 'line',
           data: {
             labels: trendDates,
             datasets: [{
               label: 'Incidents per Day',
               data: trendCounts,
-              fill: false,
               borderColor: 'blue',
+              fill: false,
               tension: 0.2
             }]
           },
@@ -116,8 +123,8 @@
             }
           }
         });
-      });
+      }
     });
-  </script>
-</body>
-</html>
+  });
+</script>
+{% endblock %}
