@@ -3,13 +3,13 @@
 
 ## Features
 
-- 🗂️ **Incident Management:** Track, assign, and update security incidents.
-- 🔑 **JWT-based Authentication:** Secure API endpoints with JSON Web Token authentication.
-- 👤 **User Management:** Register, manage, and assign roles to users.
-- 🔌 **API-first Design:** All major functionality exposed via RESTful APIs.
-- 🛡️ **Configurable Security:** Leverages best practices for secret management and debug control.
-- 🚦 **Role-Based Access Control:** (Planned) Restrict actions based on user roles.
-- 📊 **Audit Logging:** (Planned) Record activity for compliance and review.
+-  **Incident Management:** Track, assign, and update security incidents.
+-  **JWT-based Authentication:** Secure API endpoints with JSON Web Token authentication.
+-  **User Management:** Register, manage, and assign roles to users.
+-  **API-first Design:** All major functionality exposed via RESTful APIs.
+-  **Configurable Security:** Leverages best practices for secret management and debug control.
+-  **Role-Based Access Control:** (Planned) Restrict actions based on user roles.
+-  **Audit Logging:** (Planned) Record activity for compliance and review.
 
 
 ## Quick Start
@@ -103,11 +103,11 @@ Authorization: Bearer <your_token>
 
 **Best Practices Implemented:**
 
-- 🔒 Secret key loaded from environment variable, never hardcoded
-- 🛑 Debug mode is **disabled by default in production**
-- 📝 Sensitive files (`.env`, DBs) should be in `.gitignore`
-- 🕵️‍♂️ Input validation and password policy (in progress)
-- 🔐 Secure JWT, CSRF support (plannned)
+-  Secret key loaded from environment variable, never hardcoded
+-  Debug mode is **disabled by default in production**
+-  Sensitive files (`.env`, DBs) should be in `.gitignore`
+-  Input validation and password policy (in progress)
+-  Secure JWT, CSRF support (plannned)
 
 **You are responsible for:**
 
